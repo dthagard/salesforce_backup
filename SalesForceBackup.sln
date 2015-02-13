@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesForceBackup", "SalesForceBackup\SalesForceBackup.csproj", "{FCBD6BB9-5512-4052-9E6B-2A5BB7DC9B55}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		CD_ROM|Any CPU = CD_ROM|Any CPU
+		Debug|Any CPU = Debug|Any CPU
+		DVD-5|Any CPU = DVD-5|Any CPU
+		Release|Any CPU = Release|Any CPU
+		SingleImage|Any CPU = SingleImage|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FCBD6BB9-5512-4052-9E6B-2A5BB7DC9B55}.CD_ROM|Any CPU.ActiveCfg = Release|Any CPU
+		{FCBD6BB9-5512-4052-9E6B-2A5BB7DC9B55}.CD_ROM|Any CPU.Build.0 = Release|Any CPU
+		{FCBD6BB9-5512-4052-9E6B-2A5BB7DC9B55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCBD6BB9-5512-4052-9E6B-2A5BB7DC9B55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCBD6BB9-5512-4052-9E6B-2A5BB7DC9B55}.DVD-5|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCBD6BB9-5512-4052-9E6B-2A5BB7DC9B55}.DVD-5|Any CPU.Build.0 = Debug|Any CPU
+		{FCBD6BB9-5512-4052-9E6B-2A5BB7DC9B55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCBD6BB9-5512-4052-9E6B-2A5BB7DC9B55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCBD6BB9-5512-4052-9E6B-2A5BB7DC9B55}.SingleImage|Any CPU.ActiveCfg = Release|Any CPU
+		{FCBD6BB9-5512-4052-9E6B-2A5BB7DC9B55}.SingleImage|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
