@@ -1,5 +1,6 @@
-# salesforce_backup
-Performs automated backups of SalesForce.com data to either AWS or Azure.
+# Salesforce-Backup [![Build Status](https://dev.azure.com/huddeldaddel/huddeldaddel/_apis/build/status/huddeldaddel.salesforce-backup?branchName=master)](https://dev.azure.com/huddeldaddel/huddeldaddel/_build/latest?definitionId=6&branchName=master)
+
+Performs automated backups of SalesForce.com export data locally or to either AWS or Azure.
 
 Usage
 =====
