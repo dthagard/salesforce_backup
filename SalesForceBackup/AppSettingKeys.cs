@@ -1,6 +1,4 @@
-﻿using Amazon.Runtime;
-
-namespace SalesForceBackup
+﻿namespace SalesForceBackup
 {
     /// <summary>
     /// Contains the keys that are defined in the App.Config.
@@ -15,17 +13,18 @@ namespace SalesForceBackup
         public const string AzureContainer = "AzureContainer";
         public const string AzureFolder = "AzureFolder";
         public const string AzureSharedKey = "AzureSharedKey";
-        public const string DataExportPage = "dataExportPage";
-        public const string DownloadPage = "downloadPage";
-        public const string FilenamePattern = "filenamePattern";
-        public const string Host = "host";
-        public const string Password = "password";
-        public const string OrganizationId = "organizationId";
+        public const string DataExportPage = "DataExportPage";
+        public const string DownloadPage = "DownloadPage";
+        public const string FilenamePattern = "FilenamePattern";
+        public const string Host = "Host";
+        public const string Password = "Password";
+        public const string OrganizationId = "OrganizationId";
         public const string S3Bucket = "S3Bucket";
         public const string S3Folder = "S3Folder";
-        public const string Scheme = "scheme";
-        public const string Uploader = "uploader";
-        public const string Username = "username";
+        public const string Scheme = "Scheme";
+        public const string SecurityToken = "SecurityToken";
+        public const string Uploader = "Uploader";
+        public const string Username = "Username";
     }
 
     /// <summary>
