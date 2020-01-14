@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using SalesForceBackup.Interfaces;
@@ -26,6 +26,9 @@ namespace SalesForceBackup
         {
             _appSettings = TinyIoCContainer.Current.Resolve<IAppSettings>();
             _errorHandler = TinyIoCContainer.Current.Resolve<IErrorHandler>();
+
+            ServicePointManager.Expect100Continue = true;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
         }
 
         /// <summary>
@@ -41,8 +44,9 @@ namespace SalesForceBackup
             {
                 //Login to SalesForce
                 Console.WriteLine("Connecting to SalesForce.com...");
-                var currentLoginResult = sfClient.login(_appSettings.Get(AppSettingKeys.Username),
-                    _appSettings.Get(AppSettingKeys.Password));
+                var username = _appSettings.Get(AppSettingKeys.Username);
+                var password = _appSettings.Get(AppSettingKeys.Password) + _appSettings.Get(AppSettingKeys.SecurityToken);
+                var currentLoginResult = sfClient.login(username, password);
 
                 //Change the binding to the new endpoint
                 sfClient.Url = currentLoginResult.serverUrl;
@@ -57,14 +61,13 @@ namespace SalesForceBackup
 
                 //Find any available downloads on the page
                 var regex = new Regex(_appSettings.Get(AppSettingKeys.FilenamePattern), RegexOptions.IgnoreCase);
-                var matches = regex.Match(page.Content.ReadAsStringAsync().Result);
-                foreach (var match in matches.Groups.Cast<object>()
-                    .Where(file => !file.ToString().StartsWith("<a href") && !string.IsNullOrEmpty(file.ToString())))
-                {
+                var matches = regex.Matches(page.Content.ReadAsStringAsync().Result);
+                foreach (Match match in matches) {
                     //Get the correctly formatted download file
-                    var fileName = match.ToString().Split(new[] {'&'})[0];
+                    var fileName = match.Groups[1].ToString().Split(new[] { '&' })[0];
                     var url = String.Format("{0}{1}", _appSettings.Get(AppSettingKeys.DownloadPage),
                         match.ToString().Replace("&amp;", "&"));
+                    url = url.Substring(0, url.Length - 1);
 
                     //Retrieve the file
                     Console.WriteLine("Downloading {0} from SalesForce.com...", fileName);
