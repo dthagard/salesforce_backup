@@ -85,6 +85,7 @@
     <Compile Include="AzureBlobUploader.cs" />
     <Compile Include="Backup.cs" />
     <Compile Include="ConsoleErrorHandler.cs" />
+    <Compile Include="DataExportFile.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="AppSettings.cs" />
     <Compile Include="Interfaces\IAppSettings.cs" />

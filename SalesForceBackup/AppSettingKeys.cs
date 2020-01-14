@@ -18,7 +18,6 @@
         public const string FilenamePattern = "FilenamePattern";
         public const string Host = "Host";
         public const string Password = "Password";
-        public const string OrganizationId = "OrganizationId";
         public const string S3Bucket = "S3Bucket";
         public const string S3Folder = "S3Folder";
         public const string Scheme = "Scheme";

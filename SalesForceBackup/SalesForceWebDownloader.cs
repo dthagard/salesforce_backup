@@ -12,7 +12,7 @@ using TinyIoC;
 namespace SalesForceBackup
 {
     /// <summary>
-    /// Downloads backup files from the SalesForce.com website by scraping the web page.
+    /// Downloads backup files from the Salesforce website by scraping the web page.
     /// </summary>
     public class SalesForceWebDownloader : IDownloader
     {
@@ -38,49 +38,25 @@ namespace SalesForceBackup
         public string[] Download()
         {
             var files = new List<string>();
-            var sfClient = new SforceService();
+            var baseAddress = new Uri(String.Format("{0}://{1}", _appSettings.Get(AppSettingKeys.Scheme), _appSettings.Get(AppSettingKeys.Host)));
 
             try
             {
-                //Login to SalesForce
-                Console.WriteLine("Connecting to SalesForce.com...");
-                var username = _appSettings.Get(AppSettingKeys.Username);
-                var password = _appSettings.Get(AppSettingKeys.Password) + _appSettings.Get(AppSettingKeys.SecurityToken);
-                var currentLoginResult = sfClient.login(username, password);
+                Console.Write("Connecting to SalesForce.com ... ");
+                var sessionId = LogIn();
+                Console.WriteLine("\u221A");
 
-                //Change the binding to the new endpoint
-                sfClient.Url = currentLoginResult.serverUrl;
+                Console.Write("Getting list of export files ... ");
+                var exportFiles = DownloadListOfExportFiles(sessionId);
+                Console.WriteLine("\u221A");
 
-                //Create a new session header object and set the session id to that returned by the login
-                var sessionId = currentLoginResult.sessionId;
-                sfClient.SessionHeaderValue = new SessionHeader {sessionId = sessionId};
+                for (int i=0; i<exportFiles.Count; i++) {                    
+                    var exportFile = exportFiles[i];
+                    Console.Write(String.Format("Downloading {0} of {1}: {2} ... ", i + 1, exportFiles.Count, exportFile.FileName));
+                    DownloadExportFile(exportFile, baseAddress, sessionId).Wait();
+                    Console.WriteLine("\u221A");
 
-                //Retrieve the page containing the list of SalesForce exports.
-                Console.WriteLine("Getting files for download...");
-                var page = GetSalesForcePage(_appSettings.Get(AppSettingKeys.DataExportPage), sessionId);
-
-                //Find any available downloads on the page
-                var regex = new Regex(_appSettings.Get(AppSettingKeys.FilenamePattern), RegexOptions.IgnoreCase);
-                var matches = regex.Matches(page.Content.ReadAsStringAsync().Result);
-                foreach (Match match in matches) {
-                    //Get the correctly formatted download file
-                    var fileName = match.Groups[1].ToString().Split(new[] { '&' })[0];
-                    var url = String.Format("{0}{1}", _appSettings.Get(AppSettingKeys.DownloadPage),
-                        match.ToString().Replace("&amp;", "&"));
-                    url = url.Substring(0, url.Length - 1);
-
-                    //Retrieve the file
-                    Console.WriteLine("Downloading {0} from SalesForce.com...", fileName);
-                    var download = GetSalesForcePage(url, sessionId);
-                    var array = download.Content.ReadAsByteArrayAsync().Result;
-                    using (var fileStream = File.Create(fileName))
-                    {
-                        fileStream.Write(array, 0, array.Length);
-                    }
-
-                    var filePath = String.Join(Path.DirectorySeparatorChar.ToString(CultureInfo.InvariantCulture),
-                        new [] { Environment.CurrentDirectory, fileName });
-                    files.Add(filePath);
+                    files.Add(String.Join(Path.DirectorySeparatorChar.ToString(CultureInfo.InvariantCulture), new[] { Environment.CurrentDirectory, exportFile.FileName }));
                 }
             }
             catch (Exception e)
@@ -90,24 +66,79 @@ namespace SalesForceBackup
             return files.ToArray();
         }
 
+        private string LogIn()
+        {            
+            var sfClient = new SforceService();
+            var username = _appSettings.Get(AppSettingKeys.Username);
+            var password = _appSettings.Get(AppSettingKeys.Password) + _appSettings.Get(AppSettingKeys.SecurityToken);
+            var currentLoginResult = sfClient.login(username, password);
+
+            // Change the binding to the new endpoint
+            sfClient.Url = currentLoginResult.serverUrl;
+
+            // Create a new session header object and set the session id to that returned by the login
+            var sessionId = currentLoginResult.sessionId;
+            sfClient.SessionHeaderValue = new SessionHeader { sessionId = sessionId };
+            return sessionId;
+        }
+
+        private List<DataExportFile> DownloadListOfExportFiles(string sessionId)
+        {
+            List<DataExportFile> result = new List<DataExportFile>();
+           
+            var page = DownloadWebpage(_appSettings.Get(AppSettingKeys.DataExportPage), sessionId);
+            var regex = new Regex(_appSettings.Get(AppSettingKeys.FilenamePattern), RegexOptions.IgnoreCase);
+            var matches = regex.Matches(page.Content.ReadAsStringAsync().Result);
+            foreach (Match match in matches)
+            {
+                var fileName = match.Groups[1].ToString().Split(new[] { '&' })[0];
+                var url = String.Format("{0}{1}", _appSettings.Get(AppSettingKeys.DownloadPage), match.ToString().Replace("&amp;", "&"));                
+                result.Add(new DataExportFile(fileName, url.Substring(0, url.Length - 1)));
+            }
+            return result;
+        }
+
         /// <summary>
-        /// Retrieves a page from SalesForce.
+        /// Retrieves a page from Salesforce.
         /// </summary>
-        /// <param name="url">The full URL for the SalesForce page.</param>
+        /// <param name="url">The relative URL for the Salesforce page.</param>
         /// <param name="sessionId">The current session ID.</param>
         /// <returns>An HttpResponseMessage for the url.</returns>
-        /// <remarks>
-        /// SalesForce requires that you populate an organizationId and sessionId for authenticated requests.
-        /// </remarks>
-        private HttpResponseMessage GetSalesForcePage(string url, string sessionId)
+        private HttpResponseMessage DownloadWebpage(string url, string sessionId)
         {
             var baseAddress = new Uri(String.Format("{0}://{1}", _appSettings.Get(AppSettingKeys.Scheme), _appSettings.Get(AppSettingKeys.Host)));
             using (var handler = new HttpClientHandler { UseCookies = false })
             using (var client = new HttpClient(handler) { BaseAddress = baseAddress })
             {
                 var message = new HttpRequestMessage(HttpMethod.Get, url);
-                message.Headers.Add("Cookie", String.Format("oid={0}; sid={1}", _appSettings.Get(AppSettingKeys.OrganizationId), sessionId));
-                return client.SendAsync(message).Result;
+                message.Headers.Add("Cookie", String.Format("sid={0}", sessionId));
+                return client.SendAsync(message, HttpCompletionOption.ResponseHeadersRead).Result;
+            }
+        }
+
+        /// <summary>
+        /// Asynchronously downloads a data export file from Salesforce.
+        /// </summary>
+        /// <param name="dataExportFile">file to be downloaded</param>
+        /// <param name="baseAddress">base address of the Salesforce server</param>
+        /// <param name="sessionId">current session ID.</param>
+        /// <returns>a Task that can be used to monitor the progress</returns>
+        private static async System.Threading.Tasks.Task DownloadExportFile(DataExportFile dataExportFile, Uri baseAddress, string sessionId)
+        {
+            using (var handler = new HttpClientHandler { UseCookies = false })
+            using (var client = new HttpClient(handler) { BaseAddress = baseAddress })
+            {
+                var message = new HttpRequestMessage(HttpMethod.Get, dataExportFile.Url);
+                message.Headers.Add("Cookie", String.Format("sid={0}", sessionId));
+
+                using (HttpResponseMessage response = await client.SendAsync(message, HttpCompletionOption.ResponseHeadersRead))
+                using (Stream streamToReadFrom = await response.Content.ReadAsStreamAsync())
+                {
+                    using (Stream fileStream = File.Open(dataExportFile.FileName, FileMode.Create))
+                    {
+                        await streamToReadFrom.CopyToAsync(fileStream);
+                    }
+                }
             }
         }
 
