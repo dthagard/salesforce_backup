@@ -30,6 +30,7 @@ namespace SalesForceBackup
             _appSettings = TinyIoCContainer.Current.Resolve<IAppSettings>();
             AssignValuesFromArguments(args);
 
+
             Console.WriteLine("Starting backup...");
             var backup = TinyIoCContainer.Current.Resolve<Backup>();
             backup.Run();
@@ -50,7 +51,6 @@ namespace SalesForceBackup
                 switch (args[i])
                 {
                     case "--help":
-                    case "-h":
                         DisplayHelp();
                         Environment.Exit((int)Enums.ExitCode.Normal);
                         break;
@@ -59,6 +59,12 @@ namespace SalesForceBackup
                         break;
                     case "-p":
                         _appSettings.Set(AppSettingKeys.Password, args[++i]);
+                        break;
+                    case "-t":
+                        _appSettings.Set(AppSettingKeys.SecurityToken, args[++i]);
+                        break;
+                    case "-h":
+                        _appSettings.Set(AppSettingKeys.Host, args[++i]);
                         break;
                     case "-a":
                         _appSettings.Set(AppSettingKeys.AwsAccessKey, args[++i]);
