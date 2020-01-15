@@ -30,6 +30,7 @@ To run, simply execute the SalesForcebackup.exe at the command prompt. Optionall
 Usage: SalesForceBackup.exe [-hupasyz]
 
 Options:
+```
         --help          Displays this help text
         -u              Username for Salesforce
         -p              Password for Salesforce
@@ -39,3 +40,4 @@ Options:
         -s              AWS secret key
         -y              Azure account name
         -z              Azure shared key
+```
