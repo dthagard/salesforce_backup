@@ -67,19 +67,14 @@ namespace SalesForceBackup
         }
 
         private string LogIn()
-        {            
-            var sfClient = new SforceService();
-            var username = _appSettings.Get(AppSettingKeys.Username);
-            var password = _appSettings.Get(AppSettingKeys.Password) + _appSettings.Get(AppSettingKeys.SecurityToken);
-            var currentLoginResult = sfClient.login(username, password);
-
-            // Change the binding to the new endpoint
-            sfClient.Url = currentLoginResult.serverUrl;
-
-            // Create a new session header object and set the session id to that returned by the login
-            var sessionId = currentLoginResult.sessionId;
-            sfClient.SessionHeaderValue = new SessionHeader { sessionId = sessionId };
-            return sessionId;
+        {
+            using (var sfClient = new SforceService())
+            {
+                var username = _appSettings.Get(AppSettingKeys.Username);
+                var password = _appSettings.Get(AppSettingKeys.Password) + _appSettings.Get(AppSettingKeys.SecurityToken);
+                var currentLoginResult = sfClient.login(username, password);
+                return currentLoginResult.sessionId;
+            }
         }
 
         private List<DataExportFile> DownloadListOfExportFiles(string sessionId)
