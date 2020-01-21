@@ -41,7 +41,7 @@ namespace SalesForceBackup
                 container.CreateIfNotExists();
                 var blob = container.GetBlockBlobReference(blobName);
                 Console.WriteLine("Uploading {0} to Azure...", Path.GetFileName(file));
-                blob.UploadFromFile(file, FileMode.OpenOrCreate);
+                blob.UploadFromFile(file);
             }
             catch (Exception e)
             {

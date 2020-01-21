@@ -33,6 +33,7 @@ namespace SalesForceBackup
         public void Upload(string file)
         {
             var filename = Path.GetFileName(file);
+            IFormatProvider formatProvider = TinyIoCContainer.Current.Resolve<IFormatProvider>();
             try
             {
                 var credentials = new BasicAWSCredentials(_appSettings.Get(AppSettingKeys.AwsAccessKey), _appSettings.Get(AppSettingKeys.AwsSecretKey));
@@ -45,19 +46,20 @@ namespace SalesForceBackup
                         Key = String.Join("/", new[] { _appSettings.Get(AppSettingKeys.S3Folder), filename }),
                         FilePath = file
                     };
-                    Console.WriteLine("Uploading {0} to AWS S3...", filename);
+                    Console.Write(string.Format(formatProvider, Properties.Resources.StatusUploadingS3, filename));
                     client.PutObject(request);
+                    Console.WriteLine("\u221A");
                 }
             }
             catch (AmazonS3Exception e)
             {
-                if (e.ErrorCode != null && (e.ErrorCode.Equals("InvalidAccessKeyId") || e.ErrorCode.Equals("InvalidSecurity")))
+                if (e.ErrorCode != null && ("InvalidAccessKeyId" == e.ErrorCode || "InvalidSecurity" == e.ErrorCode))
                 {
-                    _errorHandler.HandleError(e, (int)Enums.ExitCode.AwsCredentials, "Check the provided AWS Credentials");
+                    _errorHandler.HandleError(e, (int)Enums.ExitCode.AwsCredentials, Properties.Resources.ConfigurationS3Credentials);
                 }
                 else
                 {
-                    _errorHandler.HandleError(e, (int)Enums.ExitCode.AwsS3Error, String.Format("Error occurred. Message:'{0}' when writing an object", e.Message));
+                    _errorHandler.HandleError(e, (int)Enums.ExitCode.AwsS3Error, string.Format(formatProvider, Properties.Resources.StatusS3UploadFailed, e.Message));
                 }
             }
         }

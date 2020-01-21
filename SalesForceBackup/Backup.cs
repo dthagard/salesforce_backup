@@ -98,8 +98,8 @@ namespace SalesForceBackup
         /// <remarks>If the revision is less than or equal to 0, then no revision indicator will be applied.</remarks>
         private string FormatFileName(string extension, int i)
         {
-            var revision = i <= 0 ? String.Empty : String.Format("-{0}", i);
-            var dateName = String.Format("{0}{1}{2}", GetDatetimeString(), revision, extension);
+            var revision = i <= 0 ? String.Empty : string.Format(CultureInfo.InvariantCulture, "-{0}", i);
+            var dateName = string.Format(CultureInfo.InvariantCulture, "{0}{1}{2}", GetDateTimeString(), revision, extension);
             return dateName;
         }
 
@@ -107,14 +107,14 @@ namespace SalesForceBackup
         /// Gets a specially formatted datetime string based on the current UTC datetime.
         /// </summary>
         /// <returns>The datetime string.</returns>
-        private string GetDatetimeString()
+        private static string GetDateTimeString()
         {
-            return String.Format("{0}-{1}-{2}_{3}-{4}",
-                DateTime.UtcNow.Year.ToString("D4"),
-                DateTime.UtcNow.Month.ToString("D2"),
-                DateTime.UtcNow.Day.ToString("D2"),
-                DateTime.UtcNow.Hour.ToString("D2"),
-                DateTime.UtcNow.Minute.ToString("D2"));
+            return string.Format(CultureInfo.InvariantCulture, "{0}-{1}-{2}_{3}-{4}",
+                DateTime.UtcNow.Year.ToString("D4", CultureInfo.InvariantCulture),
+                DateTime.UtcNow.Month.ToString("D2", CultureInfo.InvariantCulture),
+                DateTime.UtcNow.Day.ToString("D2", CultureInfo.InvariantCulture),
+                DateTime.UtcNow.Hour.ToString("D2", CultureInfo.InvariantCulture),
+                DateTime.UtcNow.Minute.ToString("D2", CultureInfo.InvariantCulture));
         }
 
     }

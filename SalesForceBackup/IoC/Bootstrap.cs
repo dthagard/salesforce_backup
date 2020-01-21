@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using System.Globalization;
 using SalesForceBackup.Interfaces;
 using TinyIoC;
 
@@ -18,6 +19,7 @@ namespace SalesForceBackup.IoC
             TinyIoCContainer.Current.Register<IDownloader>(new SalesForceWebDownloader());
 
             TinyIoCContainer.Current.Register<Backup>();
+            TinyIoCContainer.Current.Register<IFormatProvider>(new CultureInfo("en-US"));
         }
     }
 }
