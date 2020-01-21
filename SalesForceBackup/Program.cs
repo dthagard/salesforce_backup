@@ -36,13 +36,13 @@ namespace SalesForceBackup
             // Register our IoC containers
             Bootstrap.Register();
 
-            Console.WriteLine("Reading Settings...");
+            Console.WriteLine(Properties.Resources.StatusReadSettings);
             _appSettings = TinyIoCContainer.Current.Resolve<IAppSettings>();
             AssignValuesFromArguments(args);
             CheckRequiredArguments();
 
 
-            Console.WriteLine("Starting backup...");
+            Console.WriteLine(Properties.Resources.StatusStartBackup);
             var backup = TinyIoCContainer.Current.Resolve<Backup>();
             backup.Run();
             
@@ -74,8 +74,9 @@ namespace SalesForceBackup
                     }
                     else
                     {
-                        Console.WriteLine("Argument missing for " + arg + " value");
-                        Console.WriteLine("Run '" + AppDomain.CurrentDomain.FriendlyName + " --help' to display help");
+                        IFormatProvider formatProvider = TinyIoCContainer.Current.Resolve<IFormatProvider>();
+                        Console.WriteLine(string.Format(formatProvider, Properties.Resources.ConfigurationArgumentValueMissing, arg));
+                        Console.WriteLine(string.Format(formatProvider, Properties.Resources.ConfigurationProblemCallHelp, AppDomain.CurrentDomain.FriendlyName));
                         Environment.Exit((int)Enums.ExitCode.ConfigurationError);
                     }
                 }
@@ -89,8 +90,9 @@ namespace SalesForceBackup
                 || String.IsNullOrEmpty(_appSettings.Get(AppSettingKeys.Password))
                 || String.IsNullOrEmpty(_appSettings.Get(AppSettingKeys.SecurityToken)))
             {
-                Console.WriteLine("Required argument is missing");
-                Console.WriteLine("Run '" + AppDomain.CurrentDomain.FriendlyName + " --help' to display help");
+                IFormatProvider formatProvider = TinyIoCContainer.Current.Resolve<IFormatProvider>();
+                Console.WriteLine(Properties.Resources.ConfigurationArgumentMissing);
+                Console.WriteLine(string.Format(formatProvider, Properties.Resources.ConfigurationProblemCallHelp, AppDomain.CurrentDomain.FriendlyName));
                 Environment.Exit((int)Enums.ExitCode.ConfigurationError);
             }
         }

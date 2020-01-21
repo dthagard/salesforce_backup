@@ -5,9 +5,11 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using System.Web.Services.Protocols;
 using SalesForceBackup.Interfaces;
 using SalesForceBackup.SFDC;
 using TinyIoC;
+using static SalesForceBackup.Enums;
 
 namespace SalesForceBackup
 {
@@ -38,29 +40,39 @@ namespace SalesForceBackup
         public string[] Download()
         {
             var files = new List<string>();
-            var baseAddress = new Uri(String.Format("{0}://{1}", _appSettings.Get(AppSettingKeys.Scheme), _appSettings.Get(AppSettingKeys.Host)));
+            var baseAddress = new Uri(string.Format(CultureInfo.InvariantCulture, "{0}://{1}", _appSettings.Get(AppSettingKeys.Scheme), _appSettings.Get(AppSettingKeys.Host)));
 
             try
             {
-                Console.Write("Connecting to SalesForce.com ... ");
+                Console.Write(Properties.Resources.StatusConnectingToSalesforce);
                 var sessionId = LogIn();
                 Console.WriteLine("\u221A");
 
-                Console.Write("Getting list of export files ... ");
+                Console.Write(Properties.Resources.StatusFilePage);
                 var exportFiles = DownloadListOfExportFiles(sessionId);
                 Console.WriteLine("\u221A");
 
                 for (int i=0; i<exportFiles.Count; i++) {                    
                     var exportFile = exportFiles[i];
-                    Console.Write(String.Format("Downloading {0} of {1}: {2} ... ", i + 1, exportFiles.Count, exportFile.FileName));
+                    IFormatProvider formatProvider = TinyIoCContainer.Current.Resolve<IFormatProvider>();   
+                    Console.Write(string.Format(formatProvider, Properties.Resources.StatusDownloading, i + 1, exportFiles.Count, exportFile.FileName));
                     DownloadExportFile(exportFile, baseAddress, sessionId).Wait();
                     Console.WriteLine("\u221A");
 
-                    files.Add(String.Join(Path.DirectorySeparatorChar.ToString(CultureInfo.InvariantCulture), new[] { Environment.CurrentDirectory, exportFile.FileName }));
+                    files.Add(string.Join(Path.DirectorySeparatorChar.ToString(CultureInfo.InvariantCulture), new[] { Environment.CurrentDirectory, exportFile.FileName }));
+                }
+            }
+            catch(SoapException se)
+            {
+                if("INVALID_LOGIN" == se.Code.Name)
+                {
+                    Console.WriteLine("X");
+                    _errorHandler.HandleError(se, (int)ExitCode.SalesforceAuthError, Properties.Resources.ConfigurationSfdcCredentialsInvalid);
                 }
             }
             catch (Exception e)
             {
+                Console.WriteLine("X");
                 _errorHandler.HandleError(e);
             }
             return files.ToArray();
@@ -87,7 +99,7 @@ namespace SalesForceBackup
             foreach (Match match in matches)
             {
                 var fileName = match.Groups[1].ToString().Split(new[] { '&' })[0];
-                var url = String.Format("{0}{1}", _appSettings.Get(AppSettingKeys.DownloadPage), match.ToString().Replace("&amp;", "&"));                
+                var url = string.Format(CultureInfo.InvariantCulture, "{0}{1}", _appSettings.Get(AppSettingKeys.DownloadPage), match.ToString().Replace("&amp;", "&"));                
                 result.Add(new DataExportFile(fileName, url.Substring(0, url.Length - 1)));
             }
             return result;
@@ -101,12 +113,12 @@ namespace SalesForceBackup
         /// <returns>An HttpResponseMessage for the url.</returns>
         private HttpResponseMessage DownloadWebpage(string url, string sessionId)
         {
-            var baseAddress = new Uri(String.Format("{0}://{1}", _appSettings.Get(AppSettingKeys.Scheme), _appSettings.Get(AppSettingKeys.Host)));
+            var baseAddress = new Uri(string.Format(CultureInfo.InvariantCulture, "{0}://{1}", _appSettings.Get(AppSettingKeys.Scheme), _appSettings.Get(AppSettingKeys.Host)));
             using (var handler = new HttpClientHandler { UseCookies = false })
             using (var client = new HttpClient(handler) { BaseAddress = baseAddress })
+            using (var message = new HttpRequestMessage(HttpMethod.Get, url))
             {
-                var message = new HttpRequestMessage(HttpMethod.Get, url);
-                message.Headers.Add("Cookie", String.Format("sid={0}", sessionId));
+                message.Headers.Add("Cookie", string.Format(CultureInfo.InvariantCulture, "sid={0}", sessionId));
                 return client.SendAsync(message, HttpCompletionOption.ResponseHeadersRead).Result;
             }
         }
@@ -122,20 +134,16 @@ namespace SalesForceBackup
         {
             using (var handler = new HttpClientHandler { UseCookies = false })
             using (var client = new HttpClient(handler) { BaseAddress = baseAddress })
+            using (var message = new HttpRequestMessage(HttpMethod.Get, dataExportFile.Url))
             {
-                var message = new HttpRequestMessage(HttpMethod.Get, dataExportFile.Url);
-                message.Headers.Add("Cookie", String.Format("sid={0}", sessionId));
-
+                message.Headers.Add("Cookie", string.Format(CultureInfo.InvariantCulture, "sid={0}", sessionId));
                 using (HttpResponseMessage response = await client.SendAsync(message, HttpCompletionOption.ResponseHeadersRead))
                 using (Stream streamToReadFrom = await response.Content.ReadAsStreamAsync())
+                using (Stream fileStream = File.Open(dataExportFile.FileName, FileMode.Create))
                 {
-                    using (Stream fileStream = File.Open(dataExportFile.FileName, FileMode.Create))
-                    {
-                        await streamToReadFrom.CopyToAsync(fileStream);
-                    }
-                }
+                    await streamToReadFrom.CopyToAsync(fileStream);
+                }       
             }
         }
-
     }
 }
