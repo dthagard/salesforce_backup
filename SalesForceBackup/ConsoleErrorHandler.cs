@@ -26,7 +26,10 @@ namespace SalesForceBackup
         /// <remarks>This will terminate the application with the specified exit code.</remarks>
         public void HandleError(Exception e, int exitCode)
         {
-            HandleError(e, exitCode, "Unknown error occured:");
+            Console.WriteLine(Properties.Resources.StatusUnknownError);
+            if(null != e)
+                Console.WriteLine(e.ToString());
+            Environment.Exit(exitCode);
         }
 
         /// <summary>
@@ -39,7 +42,6 @@ namespace SalesForceBackup
         public void HandleError(Exception e, int exitCode, string errorMessage)
         {
             Console.WriteLine(errorMessage);
-            Console.WriteLine(e.ToString());
             Environment.Exit(exitCode);
         }
     }
