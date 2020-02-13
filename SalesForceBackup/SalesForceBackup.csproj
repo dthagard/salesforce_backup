@@ -18,6 +18,7 @@
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -30,7 +31,6 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -102,7 +102,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppSettingKeys.cs" />
-    <Compile Include="AzureBlobUploader.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Uploaders\AzureBlobUploader.cs" />
     <Compile Include="Backup.cs" />
     <Compile Include="ConsoleErrorHandler.cs" />
     <Compile Include="DataExportFile.cs" />
@@ -125,7 +126,8 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="S3Uploader.cs" />
+    <Compile Include="Uploaders\FileSystemUploader.cs" />
+    <Compile Include="Uploaders\S3Uploader.cs" />
     <Compile Include="IoC\TinyIoC.cs" />
     <Compile Include="SalesForceWebDownloader.cs" />
     <Compile Include="Web References\SFDC\Reference.cs">
@@ -325,6 +327,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>

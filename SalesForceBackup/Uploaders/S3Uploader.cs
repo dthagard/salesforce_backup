@@ -7,7 +7,7 @@ using Amazon.S3.Model;
 using SalesForceBackup.Interfaces;
 using TinyIoC;
 
-namespace SalesForceBackup
+namespace SalesForceBackup.Uploaders
 {
     /// <summary>
     /// Uploads files to AWS S3.
@@ -30,9 +30,9 @@ namespace SalesForceBackup
         /// Uploads a file to S3.
         /// </summary>
         /// <param name="file">The full filename and path of the file to upload.</param>
-        public void Upload(string file)
+        /// <param name="targetName">The file name that should be used for the upload</param>
+        public void Upload(string file, String targetName)
         {
-            var filename = Path.GetFileName(file);
             IFormatProvider formatProvider = TinyIoCContainer.Current.Resolve<IFormatProvider>();
             try
             {
@@ -43,10 +43,10 @@ namespace SalesForceBackup
                     var request = new PutObjectRequest
                     {
                         BucketName = _appSettings.Get(AppSettingKeys.S3Bucket),
-                        Key = String.Join("/", new[] { _appSettings.Get(AppSettingKeys.S3Folder), filename }),
+                        Key = String.Join("/", new[] { _appSettings.Get(AppSettingKeys.S3Folder), targetName }),
                         FilePath = file
                     };
-                    Console.Write(string.Format(formatProvider, Properties.Resources.StatusUploadingS3, filename));
+                    Console.Write(string.Format(formatProvider, Properties.Resources.StatusUploadingS3, targetName));
                     client.PutObject(request);
                     Console.WriteLine("\u221A");
                 }
@@ -60,6 +60,17 @@ namespace SalesForceBackup
                 else
                 {
                     _errorHandler.HandleError(e, (int)Enums.ExitCode.AwsS3Error, string.Format(formatProvider, Properties.Resources.StatusS3UploadFailed, e.Message));
+                }
+            } 
+            finally
+            {
+                try
+                {
+                    if (File.Exists(file))
+                        File.Delete(file);
+                } catch(Exception ex)
+                {
+                    _errorHandler.HandleError(ex, (int)Enums.ExitCode.AwsS3Error, string.Format(formatProvider, Properties.Resources.StatusUnknownError, ex.Message));
                 }
             }
         }

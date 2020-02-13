@@ -41,7 +41,7 @@ namespace SalesForceBackup
         {
             var files = new List<string>();
             var baseAddress = new Uri(string.Format(CultureInfo.InvariantCulture, "{0}://{1}", _appSettings.Get(AppSettingKeys.Scheme), _appSettings.Get(AppSettingKeys.Host)));
-
+            IFormatProvider formatProvider = TinyIoCContainer.Current.Resolve<IFormatProvider>();
             try
             {
                 Console.Write(Properties.Resources.StatusConnectingToSalesforce);
@@ -50,11 +50,18 @@ namespace SalesForceBackup
 
                 Console.Write(Properties.Resources.StatusFilePage);
                 var exportFiles = DownloadListOfExportFiles(sessionId);
-                Console.WriteLine("\u221A");
-
+                Console.Write("\u221A");
+                if(1 == exportFiles.Count)
+                {
+                    Console.WriteLine(Properties.Resources.StatusFilePageResultSingular);
+                } 
+                else
+                {
+                    Console.WriteLine(string.Format(formatProvider, Properties.Resources.StatusFilePageResult, exportFiles.Count));
+                }
+                
                 for (int i=0; i<exportFiles.Count; i++) {                    
-                    var exportFile = exportFiles[i];
-                    IFormatProvider formatProvider = TinyIoCContainer.Current.Resolve<IFormatProvider>();   
+                    var exportFile = exportFiles[i];                    
                     Console.Write(string.Format(formatProvider, Properties.Resources.StatusDownloading, i + 1, exportFiles.Count, exportFile.FileName));
                     DownloadExportFile(exportFile, baseAddress, sessionId).Wait();
                     Console.WriteLine("\u221A");

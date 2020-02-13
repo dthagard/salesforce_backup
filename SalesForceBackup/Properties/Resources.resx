@@ -123,6 +123,9 @@
   <data name="ConfigurationArgumentValueMissing" xml:space="preserve">
     <value>Argument missing for {0} value</value>
   </data>
+  <data name="ConfigurationInvalidUploader" xml:space="preserve">
+    <value>The specified destination is invalid. Use 'FileSystem', 'Azure', 'AWS'</value>
+  </data>
   <data name="ConfigurationProblemCallHelp" xml:space="preserve">
     <value>Run '{0} --help' to display help</value>
   </data>
@@ -132,6 +135,9 @@
   <data name="ConfigurationSfdcCredentialsInvalid" xml:space="preserve">
     <value>Failed to login at Salesforce. Please check your credentials.</value>
   </data>
+  <data name="StatusAzureUploadFailed" xml:space="preserve">
+    <value>There was an error uploading the file to Azure: {0}</value>
+  </data>
   <data name="StatusConnectingToSalesforce" xml:space="preserve">
     <value>Connecting to SalesForce.com ... </value>
   </data>
@@ -140,6 +146,12 @@
   </data>
   <data name="StatusFilePage" xml:space="preserve">
     <value>Getting list of export files ... </value>
+  </data>
+  <data name="StatusFilePageResult" xml:space="preserve">
+    <value> ({0} files to download)</value>
+  </data>
+  <data name="StatusFilePageResultSingular" xml:space="preserve">
+    <value> (1 file to download)</value>
   </data>
   <data name="StatusReadSettings" xml:space="preserve">
     <value>Reading Settings...</value>
@@ -152,6 +164,9 @@
   </data>
   <data name="StatusUnknownError" xml:space="preserve">
     <value>Unknown error occured</value>
+  </data>
+  <data name="StatusUploadingAzure" xml:space="preserve">
+    <value>Uploading {0} to Azure ... </value>
   </data>
   <data name="StatusUploadingS3" xml:space="preserve">
     <value>Uploading {0} to AWS S3 ... </value>
